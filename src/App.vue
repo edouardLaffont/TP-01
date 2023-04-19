@@ -41,6 +41,9 @@
           {{ showCompletedTasks ? "Hide" : "Show" }} completed tasks
         </button>
       </div>
+      <button v-if="completedTasks > 0" @click="deleteAllCompletedTasks">
+        Delete all completed tasks
+      </button>
       <li v-for="(task, index) in filteredTasks" :key="index">
         <input
           type="checkbox"
@@ -136,6 +139,13 @@ export default defineComponent({
     },
     deleteTask(index: number) {
       this.$store.dispatch("deleteTask", index);
+    },
+    deleteAllCompletedTasks() {
+      const completedTasks = this.tasks.filter((task) => task.done);
+      completedTasks.forEach((task) => {
+        const index = this.tasks.indexOf(task);
+        this.$store.dispatch("deleteTask", index);
+      });
     },
     updateTask(updatedTask: Task, index: number) {
       this.$store.dispatch("updateTask", { task: updatedTask, index });

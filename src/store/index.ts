@@ -4,7 +4,10 @@ export interface Task {
   name: string;
   done: boolean;
   hours: number;
-  responsible: string;
+  responsible: {
+    name: string | undefined;
+    tasks: Task[] | undefined;
+  };
 }
 
 export interface State {

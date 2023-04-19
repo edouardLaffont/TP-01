@@ -2,19 +2,33 @@
   <div class="container">
     <h1>Todolist</h1>
     <form @submit.prevent="addTask">
-      <input type="text" v-model="task.name" placeholder="Add task" />
-      <input type="number" v-model="task.hours" placeholder="Hours" />
-      <select v-model="task.responsible">
-        <option value="">Select responsible</option>
-        <option
-          v-for="(responsible, index) in responsibles"
-          :key="index"
-          :value="responsible"
-        >
-          {{ responsible }}
+      <label for="task">Task:</label>
+      <input
+        type="text"
+        v-model="task"
+        id="task"
+        placeholder="Add task"
+        required
+      />
+
+      <label for="hours">Hours:</label>
+      <input
+        type="text"
+        v-model.number="hours"
+        id="hours"
+        placeholder="Add number of hours"
+        required
+      />
+
+      <label for="responsible">Responsible:</label>
+      <select v-model="responsible" id="responsible" required>
+        <option v-for="r in responsibles" :key="r.name" :value="r.name">
+          {{ r.name }}
         </option>
       </select>
-      <button type="submit">Add</button>
+
+      <button type="submit" :disabled="!isFormValid">Add</button>
+      <p v-if="errorMessage">{{ errorMessage }}</p>
     </form>
     <ul>
       <li v-for="(task, index) in tasks" :key="index">
@@ -35,7 +49,7 @@
           "
         />
         <label :for="index.toString()" :class="{ done: task.done }"
-          >{{ task.name }} - {{ task.hours }}h - {{ task.responsible }}</label
+          >{{ task.name }} - {{ task.responsible.name }}</label
         >
         <button @click="deleteTask(index)">Delete</button>
       </li>
@@ -52,32 +66,66 @@ export default defineComponent({
   name: "App",
   data() {
     return {
-      task: { name: "", done: false, hours: 0, responsible: "" },
-      responsibles: ["Arthas", "Gromash", "Ner'zhul", "Sylvanas"],
+      task: "",
+      hours: 0,
+      responsible: "",
+      responsibles: [
+        { name: "Sylvanas", tasks: [] },
+        { name: "Arthas", tasks: [] },
+        { name: "Nefarian", tasks: [] },
+      ],
+      errorMessage: "",
     };
   },
   computed: {
     tasks(): Task[] {
       return this.$store.getters.getTasks;
     },
+    isFormValid(): boolean {
+      return this.validateForm();
+    },
   },
   methods: {
     addTask() {
-      if (this.task.name) {
-        const task: Task = { ...this.task };
+      if (this.validateForm()) {
+        const responsibleObj = this.responsibles.find(
+          (r) => r.name === this.responsible
+        );
+        const task: Task = {
+          name: this.task,
+          done: false,
+          hours: this.hours,
+          responsible: {
+            name: responsibleObj?.name,
+            tasks: responsibleObj?.tasks,
+          },
+        };
         this.$store.dispatch("addTask", task);
-        this.task = { name: "", done: false, hours: 0, responsible: "" };
+        this.task = "";
+        this.hours = 0;
+        this.responsible = "";
       }
     },
     deleteTask(index: number) {
       this.$store.dispatch("deleteTask", index);
     },
-    updateTask(task: Task, index: number) {
-      this.$store.dispatch("updateTask", { task, index });
+    updateTask(updatedTask: Task, index: number) {
+      this.$store.dispatch("updateTask", { task: updatedTask, index });
+    },
+    validateForm() {
+      if (!this.task || !this.responsible || !this.hours) {
+        this.errorMessage = "All fields are required";
+        return false;
+      } else if (isNaN(this.hours) || this.hours <= 0) {
+        this.errorMessage = "Hours should be a positive number";
+        return false;
+      } else {
+        this.errorMessage = "";
+        return true;
+      }
     },
   },
 });
-
 declare module "@vue/runtime-core" {
   interface ComponentCustomProperties {
     $store: Store<State>;

@@ -3,6 +3,8 @@ import { createStore } from "vuex";
 export interface Task {
   name: string;
   done: boolean;
+  hours: number;
+  responsible: string;
 }
 
 export interface State {

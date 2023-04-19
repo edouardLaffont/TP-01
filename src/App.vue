@@ -33,7 +33,15 @@
       <p v-if="errorMessage">{{ errorMessage }}</p>
     </form>
     <ul>
-      <li v-for="(task, index) in tasks" :key="index">
+      <div>
+        <button @click="showInProgressTasks = !showInProgressTasks">
+          {{ showInProgressTasks ? "Hide" : "Show" }} in progress tasks
+        </button>
+        <button @click="showCompletedTasks = !showCompletedTasks">
+          {{ showCompletedTasks ? "Hide" : "Show" }} completed tasks
+        </button>
+      </div>
+      <li v-for="(task, index) in filteredTasks" :key="index">
         <input
           type="checkbox"
           :id="index.toString()"
@@ -77,6 +85,8 @@ export default defineComponent({
         { name: "Nefarian", tasks: [] },
       ],
       errorMessage: "",
+      showCompletedTasks: true,
+      showInProgressTasks: true,
     };
   },
   computed: {
@@ -91,6 +101,16 @@ export default defineComponent({
     },
     completedTasks(): number {
       return this.tasks.filter((task) => task.done).length;
+    },
+    filteredTasks(): Task[] {
+      let tasks = this.tasks;
+      if (!this.showInProgressTasks) {
+        tasks = tasks.filter((task) => task.done);
+      }
+      if (!this.showCompletedTasks) {
+        tasks = tasks.filter((task) => !task.done);
+      }
+      return tasks;
     },
   },
   methods: {

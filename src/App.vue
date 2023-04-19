@@ -1,6 +1,8 @@
 <template>
   <div class="container">
     <h1>Todolist</h1>
+    <p>Tasks in progress: {{ inProgressTasks }}</p>
+    <p>Completed tasks: {{ completedTasks }}</p>
     <form @submit.prevent="addTask">
       <label for="task">Task:</label>
       <input
@@ -83,6 +85,12 @@ export default defineComponent({
     },
     isFormValid(): boolean {
       return this.validateForm();
+    },
+    inProgressTasks(): number {
+      return this.tasks.filter((task) => !task.done).length;
+    },
+    completedTasks(): number {
+      return this.tasks.filter((task) => task.done).length;
     },
   },
   methods: {
